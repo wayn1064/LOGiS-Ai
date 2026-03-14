@@ -43,9 +43,15 @@ export default function SignUpModal({ onClose }: SignUpModalProps) {
       
       alert("가입 신청이 완료되었습니다.\nWAYN-Ai 본사 승인 후, 기재하신 이메일로 '병원 ID'와 초기 접속 안내 메일이 발송됩니다.");
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to submit signup request:', error);
-      alert("본사 서버 연동 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      
+      // 백엔드에서 명확한 에러 메시지(예: 이미 사용 중인 이메일)를 준 경우 해당 메시지를 표출
+      if (error.response && error.response.data && error.response.data.error) {
+        alert(error.response.data.error);
+      } else {
+        alert("본사 서버 연동 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+      }
     } finally {
       setIsLoading(false);
     }
