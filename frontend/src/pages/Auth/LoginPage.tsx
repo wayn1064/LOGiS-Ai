@@ -25,6 +25,15 @@ export default function LoginPage({ onLoginSuccess }: { onLoginSuccess?: () => v
     if (formData.email === '1' && formData.password === '1') {
       alert('최고시스템관리자 권한으로 로그인되었습니다. (백도어)');
       localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('user', JSON.stringify({
+        id: 'admin_backdoor',
+        name: '최고 관리자',
+        role: 'ADMIN',
+        customClaims: {
+          role: 'ADMIN',
+          accessibleModules: ['all']
+        }
+      }));
       if (onLoginSuccess) onLoginSuccess();
       return;
     }
