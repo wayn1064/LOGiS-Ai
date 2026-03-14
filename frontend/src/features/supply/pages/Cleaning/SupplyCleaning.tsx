@@ -1,0 +1,104 @@
+import { ClipboardCheck, Droplets, User, Calendar, Plus } from 'lucide-react';
+
+interface CleaningLog {
+  id: string;
+  zone: '대기실' | '진료실' | '기공실' | '중앙공급실';
+  date: string;
+  checkedBy: string;
+  status: 'COMPLETED' | 'IN_PROGRESS' | 'PENDING';
+  notes: string;
+}
+
+const MOCK_CLEANING_LOGS: CleaningLog[] = [
+  { id: 'CLN-001', zone: '진료실', date: '2026-03-12', checkedBy: '김수진', status: 'COMPLETED', notes: '체어 타구 점검 완료, 수관 소독 진행' },
+  { id: 'CLN-002', zone: '중앙공급실', date: '2026-03-12', checkedBy: '최지민', status: 'IN_PROGRESS', notes: '멸균기 내부 청소 중' },
+  { id: 'CLN-003', zone: '대기실', date: '2026-03-12', checkedBy: '이은지', status: 'PENDING', notes: '' },
+  { id: 'CLN-004', zone: '기공실', date: '2026-03-11', checkedBy: '박기사', status: 'COMPLETED', notes: '환기 시스템 필터 교체 완료' },
+];
+
+const StatusBadge = ({ status }: { status: CleaningLog['status'] }) => {
+  switch (status) {
+    case 'COMPLETED':
+      return <span className="flex items-center gap-1.5 px-2.5 py-1 bg-green-50 text-green-600 rounded-md text-xs font-bold w-fit"><ClipboardCheck size={14} /> 점검 완료</span>;
+    case 'IN_PROGRESS':
+      return <span className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-600 rounded-md text-xs font-bold w-fit"><Droplets size={14} /> 진행 중</span>;
+    case 'PENDING':
+      return <span className="flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 text-gray-500 rounded-md text-xs font-bold w-fit">대기 중</span>;
+    default:
+      return null;
+  }
+};
+
+const SupplyCleaning = () => {
+  return (
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <header className="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-[#1E293B]">청소관리</h1>
+          <p className="text-[#6B7280] mt-1">병원 내 각 구역(Zone)별 청소 상태와 감염관리 체크리스트 이행 여부를 기록합니다.</p>
+        </div>
+        <button className="flex items-center gap-2 bg-[#16A34A] text-white px-4 py-2 rounded-xl font-semibold hover:bg-green-700 transition shadow-sm whitespace-nowrap">
+          <Plus size={18} />
+          점검표 작성
+        </button>
+      </header>
+
+      {/* Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        {['대기실', '진료실', '기공실', '중앙공급실'].map((zone) => {
+          const log = MOCK_CLEANING_LOGS.find(l => l.zone === zone && l.date === '2026-03-12');
+          const isCompleted = log?.status === 'COMPLETED';
+          
+          return (
+            <div key={zone} className={`p-5 rounded-2xl border ${isCompleted ? 'bg-green-50 border-green-200' : 'bg-white border-gray-100 shadow-sm'} transition-colors`}>
+              <h3 className="font-bold text-gray-800 text-lg mb-2">{zone}</h3>
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-sm font-medium text-gray-500">금일 상태</span>
+                {log ? <StatusBadge status={log.status} /> : <span className="text-sm font-bold text-gray-400">데이터 없음</span>}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="bg-white border border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+        <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+          <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2"><Calendar size={20} className="text-[#16A34A]" /> 최근 점검 일지</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-gray-50/80 border-b border-gray-100 text-sm font-semibold text-gray-500">
+                <th className="py-4 px-6">점검 일자</th>
+                <th className="py-4 px-6">관리 구역</th>
+                <th className="py-4 px-6">점검자</th>
+                <th className="py-4 px-6">진행 상태</th>
+                <th className="py-4 px-6">특이사항 (Notes)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {MOCK_CLEANING_LOGS.map((log) => (
+                <tr key={log.id} className="hover:bg-gray-50/50 transition-colors group cursor-pointer">
+                  <td className="py-4 px-6 text-sm font-bold text-gray-800">{log.date}</td>
+                  <td className="py-4 px-6">
+                    <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-lg text-sm font-semibold">{log.zone}</span>
+                  </td>
+                  <td className="py-4 px-6 text-sm text-gray-600 flex items-center gap-2">
+                    <div className="bg-gray-200 p-1.5 rounded-full"><User size={14} className="text-gray-500" /></div>
+                    {log.checkedBy}
+                  </td>
+                  <td className="py-4 px-6">
+                    <StatusBadge status={log.status} />
+                  </td>
+                  <td className="py-4 px-6 text-sm text-gray-500">{log.notes || '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default SupplyCleaning;
