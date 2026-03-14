@@ -27,12 +27,15 @@ export default function SignUpModal({ onClose }: SignUpModalProps) {
     try {
       // 본사(WAYN-Ai) 가입 요청 API 라우트
       // 환경변수 VITE_WAYN_AI_API_URL이 없으면 사용자가 제공한 기본 Cloud Run URL 사용
-      const WAYN_AI_URL = import.meta.env.VITE_WAYN_AI_API_URL || 'https://wayn-ai-frontend-585555077661.asia-northeast3.run.app';
+      const WAYN_AI_URL = import.meta.env.VITE_WAYN_AI_API_URL || 'https://wayn-ai-backend-585555077661.asia-northeast3.run.app';
       
       // 실제 API 통신 (CORS 허용 등 WAYN-Ai 백엔드 설정 필요)
-      await axios.post(`${WAYN_AI_URL}/api/tenant/signup`, {
-        ...formData,
-        sourceModule: 'DENTi-Ai'
+      await axios.post(`${WAYN_AI_URL}/api/tenants/join`, {
+        tenantName: formData.hospitalName,
+        solutionType: 'DENTi-Ai',
+        requesterName: formData.representative,
+        email: formData.adminEmail,
+        contact: formData.contact
       });
 
       console.log('Sign Up Request Submitted to WAYN-Ai:', formData);
