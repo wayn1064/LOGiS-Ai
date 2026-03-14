@@ -1,4 +1,3 @@
-import React from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { Home, LayoutDashboard, Settings, Wrench } from 'lucide-react';
 
