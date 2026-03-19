@@ -73,3 +73,6 @@ steps:
 images:
   - 'gcr.io/$PROJECT_ID/logis-ai-backend'
   - 'gcr.io/$PROJECT_ID/logis-ai-frontend'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
