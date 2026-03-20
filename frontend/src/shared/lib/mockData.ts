@@ -1,27 +1,42 @@
-export interface LogisticsCenterType {
+export interface HospitalType {
   id: string;
   name: string;
   category: string;
 }
 
-export const logisticsCenters: LogisticsCenterType[] = [
-  { id: 'h1', name: '수도권 메가허브', category: 'Hub' },
-  { id: 'h2', name: '부산항 물류터미널', category: 'Port' },
-  { id: 'h3', name: '인천국제공항 화물센터', category: 'Airport' },
-  { id: 'h4', name: '충청권 통합물류센터', category: 'Hub' },
-  { id: 'h5', name: '영남권 배송센터', category: 'Delivery' },
-  { id: 'h6', name: '호남권 배송센터', category: 'Delivery' },
-  { id: 'h7', name: '강원 콜드체인 터미널', category: 'ColdChain' },
-  { id: 'h8', name: '제주 해상물류 허브', category: 'Port' },
+export const medicalTypes: HospitalType[] = [
+  { id: 'h1', name: '요양병원', category: 'Medical' },
+  { id: 'h2', name: '정신병원', category: 'Medical' },
+  { id: 'h3', name: '가정의학과', category: 'Clinic' },
+  { id: 'h4', name: '내과', category: 'Clinic' },
+  { id: 'h5', name: '마취통증의학과', category: 'Clinic' },
+  { id: 'h6', name: '비뇨의학과', category: 'Clinic' },
+  { id: 'h7', name: '산부인과', category: 'Clinic' },
+  { id: 'h8', name: '성형외과', category: 'Clinic' },
+  { id: 'h9', name: '소아청소년과', category: 'Clinic' },
+  { id: 'h10', name: '신경과', category: 'Clinic' },
+  { id: 'h11', name: '안과', category: 'Clinic' },
+  { id: 'h12', name: '외과', category: 'Clinic' },
+  { id: 'h13', name: '이비인후과', category: 'Clinic' },
+  { id: 'h14', name: '재활의학과', category: 'Clinic' },
+  { id: 'h15', name: '정신건강의학과', category: 'Clinic' },
+  { id: 'h16', name: '정형외과', category: 'Clinic' },
+  { id: 'h17', name: '피부과', category: 'Clinic' },
+  { id: 'h18', name: '흉부외과', category: 'Clinic' },
+  { id: 'h19', name: '치과(병원)', category: 'Dental' },
+  { id: 'h20', name: '한의원(병원)', category: 'Oriental' },
+  { id: 'h21', name: '보건기관', category: 'Public' },
 ];
 
 export const currentUser = {
   id: 'u1',
-  name: '총괄 매니저',
+  name: '김관리',
   customClaims: {
     role: 'ADMIN',
     // Mocking that the user only has access to a specific subset, or 'all'.
-    accessibleModules: ['all'] as string[], // 'all' or array of center IDs
+    // Here we let them access everything for demo, but we can simulate no access to 'h2'
+    accessibleModules: ['all'] as string[], // 'all' or array of hospital IDs
+    // Let's pretend they don't have access to h2 (정신병원) for testing the UI
     deniedModules: [] as string[]
   }
 };
