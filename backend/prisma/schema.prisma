@@ -19,6 +19,7 @@ model Company {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   users     User[]
+  products  Product[]
 
   @@map("companies")
 }
@@ -39,4 +40,24 @@ model User {
 enum Role {
   ADMIN
   USER
+}
+
+model Product {
+  id           String   @id @default(uuid())
+  tenantId     String
+  name         String
+  category     String
+  price        Int      @default(0)
+  stock        Int      @default(0)
+  manufacturer String?
+  spec         String?
+  code         String?
+  barcode      String?
+  lotNumber    String?
+  isInsurance  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  company      Company  @relation(fields: [tenantId], references: [tenantId])
+
+  @@map("products")
 }

@@ -25,6 +25,37 @@ app.get('/api/db-status', async (req, res) => {
   }
 });
 
+app.post('/api/products', async (req, res) => {
+  try {
+    const { tenantId, name, category, price, stock, manufacturer, spec, code, barcode, lotNumber, isInsurance } = req.body;
+    
+    if (!tenantId || !name || !category) {
+      return res.status(400).json({ error: 'tenantId, name, and category are required' });
+    }
+
+    const product = await prisma.product.create({
+      data: {
+        tenantId,
+        name,
+        category,
+        price: Number(price) || 0,
+        stock: Number(stock) || 0,
+        manufacturer,
+        spec,
+        code,
+        barcode,
+        lotNumber,
+        isInsurance: Boolean(isInsurance)
+      }
+    });
+
+    res.status(201).json({ status: 'success', data: product });
+  } catch (error) {
+    console.error('Failed to create product:', error);
+    res.status(500).json({ error: 'Failed to create product', details: String(error) });
+  }
+});
+
 app.listen(Number(PORT), '0.0.0.0', async () => {
   console.log(`Server is running on port ${PORT}`);
   try {

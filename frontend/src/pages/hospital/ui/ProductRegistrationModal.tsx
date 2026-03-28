@@ -1,5 +1,7 @@
 import { useState, useRef } from 'react';
 import { X, PackagePlus, UploadCloud, Barcode, Building2, Calendar, Settings2 } from 'lucide-react';
+import axios from 'axios';
+import { mockPubSub } from '../../../shared/lib/mockPubSub';
 
 interface Props {
   isOpen: boolean;
@@ -12,11 +14,30 @@ export const ProductRegistrationModal = ({ isOpen, onClose, product }: Props) =>
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Form 상태 관리
+  const [formData, setFormData] = useState({
+    name: product?.name || '',
+    category: product?.category || '재료',
+    price: product?.price || '',
+    stock: product?.stock || '',
+    manufacturer: product?.manufacturer || '',
+    spec: product?.spec || '',
+    code: product?.code || '',
+    barcode: product?.barcode || '',
+    lotNumber: product?.lotNumber || '',
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 500KB 제한
     if (file.size > 500 * 1024) {
       alert('이미지 파일은 500KB 이하만 업로드 가능합니다.');
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -28,6 +49,35 @@ export const ProductRegistrationModal = ({ isOpen, onClose, product }: Props) =>
       setPreviewImage(event.target?.result as string);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.name.trim()) {
+      alert('제품명을 입력해주세요.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const payload = {
+        tenantId: 'hospital-1', // Mock tenant ID for multi-tenant architecture
+        ...formData,
+        isInsurance: isInsuranceItem,
+      };
+
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      await axios.post(`${API_URL}/api/products`, payload);
+      
+      alert('상품이 성공적으로 등록되었습니다.');
+      // Pub/Sub 이벤트를 통해 상태 강제 리렌더링 유발
+      mockPubSub.publish('PRODUCT_LIST_REFRESH');
+      onClose();
+    } catch (error) {
+      console.error('등록 실패:', error);
+      alert('상품 등록 중 오류가 발생했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -66,7 +116,9 @@ export const ProductRegistrationModal = ({ isOpen, onClose, product }: Props) =>
               </label>
               <input 
                 type="text" 
-                defaultValue={product?.name || ''}
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
                 placeholder="제품명을 입력하세요" 
                 className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 placeholder:text-slate-400"
               />
@@ -76,13 +128,15 @@ export const ProductRegistrationModal = ({ isOpen, onClose, product }: Props) =>
                 카테고리 <span className="text-red-500">*</span>
               </label>
               <select 
-                defaultValue={product?.category || '재료'}
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
                 className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 text-slate-700"
               >
-                <option>재료</option>
-                <option>장비</option>
-                <option>기구</option>
-                <option>기초재료</option>
+                <option value="재료">재료</option>
+                <option value="장비">장비</option>
+                <option value="기구">기구</option>
+                <option value="기초재료">기초재료</option>
               </select>
             </div>
           </div>
@@ -131,6 +185,9 @@ export const ProductRegistrationModal = ({ isOpen, onClose, product }: Props) =>
                   </div>
                   <input 
                     type="text" 
+                    name="barcode"
+                    value={formData.barcode}
+                    onChange={handleChange}
                     placeholder="바코드 스캐너 입력 가능"
                     className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 placeholder:text-slate-400"
                   />
@@ -142,6 +199,9 @@ export const ProductRegistrationModal = ({ isOpen, onClose, product }: Props) =>
                 <label className="font-medium text-slate-700">LOT 번호</label>
                 <input 
                   type="text" 
+                  name="lotNumber"
+                  value={formData.lotNumber}
+                  onChange={handleChange}
                   placeholder="입고된 제품의 LOT 번호"
                   className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 placeholder:text-slate-400"
                 />
@@ -151,8 +211,10 @@ export const ProductRegistrationModal = ({ isOpen, onClose, product }: Props) =>
               <div className="space-y-2">
                 <label className="font-medium text-slate-700">공급 가격 (원)</label>
                 <input 
-                  type="text" 
-                  defaultValue={product?.price || '0'}
+                  type="number" 
+                  name="price"
+                  value={formData.price}
+                  onChange={handleChange}
                   className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-right font-bold text-slate-800 outline-none focus:bg-white focus:border-green-500 focus:ring-1 focus:ring-green-500"
                 />
               </div>
@@ -162,16 +224,19 @@ export const ProductRegistrationModal = ({ isOpen, onClose, product }: Props) =>
                 <div className="space-y-2">
                   <label className="font-medium text-slate-700">현재 재고</label>
                   <input 
-                    type="text" 
-                    defaultValue={product?.stock || '0'}
+                    type="number" 
+                    name="stock"
+                    value={formData.stock}
+                    onChange={handleChange}
                     className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-right font-bold text-green-600 outline-none focus:bg-white focus:border-green-500 focus:ring-1 focus:ring-green-500"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="font-medium text-slate-700">안전 재고</label>
                   <input 
-                    type="text" 
+                    type="number" 
                     defaultValue="0"
+                    disabled
                     className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-right font-bold text-orange-500 outline-none focus:bg-white focus:border-green-500 focus:ring-1 focus:ring-green-500"
                   />
                 </div>
@@ -194,7 +259,9 @@ export const ProductRegistrationModal = ({ isOpen, onClose, product }: Props) =>
                   <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none font-bold text-slate-400">#</div>
                   <input 
                     type="text" 
-                    defaultValue={product?.code || ''}
+                    name="code"
+                    value={formData.code}
+                    onChange={handleChange}
                     placeholder="내부 관리용 품목 번호"
                     className="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-slate-400"
                   />
@@ -207,7 +274,9 @@ export const ProductRegistrationModal = ({ isOpen, onClose, product }: Props) =>
                   <label className="font-medium text-slate-700">규격 (Size)</label>
                   <input 
                     type="text" 
-                    defaultValue={product?.spec || ''}
+                    name="spec"
+                    value={formData.spec}
+                    onChange={handleChange}
                     placeholder="예: 4.0x10"
                     className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-slate-400"
                   />
@@ -240,7 +309,9 @@ export const ProductRegistrationModal = ({ isOpen, onClose, product }: Props) =>
                     </div>
                     <input 
                       type="text" 
-                      defaultValue={product?.manufacturer || ''}
+                      name="manufacturer"
+                      value={formData.manufacturer}
+                      onChange={handleChange}
                       placeholder="제조기업"
                       className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 placeholder:text-slate-400"
                     />
@@ -309,9 +380,15 @@ export const ProductRegistrationModal = ({ isOpen, onClose, product }: Props) =>
           >
             취소
           </button>
-          <button className="flex items-center gap-2 px-6 py-2.5 bg-[#10b981] hover:bg-[#059669] text-white text-sm font-bold rounded-lg shadow-sm transition-colors active:scale-[0.98]">
+          <button 
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className={`flex items-center gap-2 px-6 py-2.5 text-white text-sm font-bold rounded-lg shadow-sm transition-colors active:scale-[0.98] ${
+              isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-[#10b981] hover:bg-[#059669]'
+            }`}
+          >
             <PackagePlus size={18} />
-            {product ? '수정하기' : '등록하기'}
+            {isLoading ? '처리 중...' : (product ? '수정하기' : '등록하기')}
           </button>
         </div>
       </div>
