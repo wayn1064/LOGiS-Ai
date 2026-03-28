@@ -19,7 +19,13 @@ steps:
 
   # 4. Frontend: Build Docker image
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/logis-ai-frontend', '.']
+    args: 
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/logis-ai-frontend'
+      - '--build-arg'
+      - 'VITE_API_URL=https://logis-ai-backend-730349031235.asia-northeast3.run.app'
+      - '.'
     dir: 'frontend'
     id: 'frontend-docker-build'
 
