@@ -33,6 +33,16 @@ app.post('/api/products', async (req, res) => {
       return res.status(400).json({ error: 'tenantId, name, and category are required' });
     }
 
+    // [HOTFIX] Ensure the company (tenant) exists before mapping foreign key relation
+    await prisma.company.upsert({
+      where: { tenantId },
+      update: {},
+      create: {
+        tenantId,
+        name: `Dental Clinic (${tenantId})`,
+      }
+    });
+
     const product = await prisma.product.create({
       data: {
         tenantId,
