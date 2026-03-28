@@ -1,21 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Filter, Plus, Package } from 'lucide-react';
-import { dentalProducts } from '../../../shared/lib/mockData';
+import axios from 'axios';
 import { ProductRegistrationModal } from './ProductRegistrationModal';
 import { useCategories } from '../../../shared/lib/CategoryContext';
+import { mockPubSub } from '../../../shared/lib/mockPubSub';
 
 export const ProductList = () => {
   const [activeTab, setActiveTab] = useState('전체상품');
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [products, setProducts] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const { categories } = useCategories();
 
+  const fetchProducts = async () => {
+    try {
+      setIsLoading(true);
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const response = await axios.get(`${API_URL}/api/products`);
+      setProducts(response.data);
+    } catch (error) {
+      console.error('상품 목록 조회 실패:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+    // 신규 상품이 등록되었을 때 리스너가 작동하여 목록을 재조회합니다.
+    const unsubscribe = mockPubSub.subscribe('PRODUCT_LIST_REFRESH', fetchProducts);
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
   // 필터링 로직
-  const filteredProducts = dentalProducts.filter(product => {
+  const filteredProducts = products.filter(product => {
     const matchTab = activeTab === '전체상품' || product.category === activeTab;
-    const matchSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                       product.code.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchSearch = product.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                       product.code?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchTab && matchSearch;
   });
 
@@ -80,7 +105,12 @@ export const ProductList = () => {
 
       {/* Product List Table Area */}
       <div className="flex-1 overflow-auto bg-slate-50/30 p-6">
-        {filteredProducts.length === 0 ? (
+        {isLoading ? (
+          <div className="h-full flex flex-col items-center justify-center text-slate-400">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-3"></div>
+            <p>상품 목록을 불러오는 중입니다...</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-slate-400">
             <Package className="h-12 w-12 mb-3 text-slate-300" />
             <p>선택하신 카테고리에 해당하는 상품이 없습니다.</p>

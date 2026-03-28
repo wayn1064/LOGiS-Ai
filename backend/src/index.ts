@@ -66,6 +66,23 @@ app.post('/api/products', async (req, res) => {
   }
 });
 
+app.get('/api/products', async (req, res) => {
+  try {
+    const products = await prisma.product.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    // Add isActive mock field for frontend compatibility
+    const formattedProducts = products.map(p => ({
+      ...p,
+      isActive: true
+    }));
+    res.json(formattedProducts);
+  } catch (error) {
+    console.error('Failed to fetch products:', error);
+    res.status(500).json({ error: 'Failed to fetch products', details: String(error) });
+  }
+});
+
 app.listen(Number(PORT), '0.0.0.0', async () => {
   console.log(`Server is running on port ${PORT}`);
   try {
