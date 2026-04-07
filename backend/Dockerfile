@@ -4,6 +4,7 @@ WORKDIR /app
 
 # Install dependencies
 COPY package*.json ./
+RUN apk add --no-cache openssl
 RUN npm ci
 
 # Copy source code and Prisma config
@@ -16,7 +17,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # Expose backend port
-EXPOSE 5001
-
+EXPOSE 5005
+ENV PORT=5005
 # Run the node app
 CMD ["node", "dist/index.js"]

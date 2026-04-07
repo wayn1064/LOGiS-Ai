@@ -65,7 +65,7 @@ export const ProductRegistrationModal = ({ isOpen, onClose, product }: Props) =>
         isInsurance: isInsuranceItem,
       };
 
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5001';
       await axios.post(`${API_URL}/api/products`, payload);
       
       alert('상품이 성공적으로 등록되었습니다.');

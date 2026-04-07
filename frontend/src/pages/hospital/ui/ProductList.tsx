@@ -17,7 +17,7 @@ export const ProductList = () => {
   const fetchProducts = async () => {
     try {
       setIsLoading(true);
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+      const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:5001';
       const response = await axios.get(`${API_URL}/api/products`);
       setProducts(response.data);
     } catch (error) {
