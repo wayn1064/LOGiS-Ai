@@ -75,4 +75,5 @@ jobs:
             cd ~/wayn-deployment
             docker-compose -f GCE_docker-compose.prod.yml pull ${{ env.SERVICE_NAME }}-frontend ${{ env.SERVICE_NAME }}-backend
             docker-compose -f GCE_docker-compose.prod.yml up -d ${{ env.SERVICE_NAME }}-frontend ${{ env.SERVICE_NAME }}-backend
+            docker-compose -f GCE_docker-compose.prod.yml up -d nginx
           "
