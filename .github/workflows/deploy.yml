@@ -73,13 +73,12 @@ jobs:
           gcloud compute ssh wayn-ai@${{ env.GCE_INSTANCE }} --zone=${{ env.GCE_ZONE }} --command="
             gcloud auth configure-docker asia-northeast3-docker.pkg.dev --quiet
             cd ~/wayn-deployment
-            
-            # DB 연결을 위한 환경변수 주입 (Production)
-            echo 'DATABASE_URL=\"postgresql://postgres:!zxasqw12%40@34.64.78.99:5432/LOGiS-Ai-db?schema=public\"' > .env
-            
             docker-compose -f GCE_docker-compose.prod.yml pull ${{ env.SERVICE_NAME }}-frontend ${{ env.SERVICE_NAME }}-backend
             docker-compose -f GCE_docker-compose.prod.yml up -d ${{ env.SERVICE_NAME }}-frontend ${{ env.SERVICE_NAME }}-backend
             sleep 3
-            docker-compose -f GCE_docker-compose.prod.yml exec -T ${{ env.SERVICE_NAME }}-backend npx prisma db push --accept-data-loss
+            
+            # DB 스키마 동기화: 백엔드 컨테이너 내부에 직접 DATABASE_URL을 주입하여 Prisma Engine 인식 문제 해결
+            docker-compose -f GCE_docker-compose.prod.yml exec -T ${{ env.SERVICE_NAME }}-backend sh -c "echo 'DATABASE_URL=\"postgresql://postgres:!zxasqw12%40@34.64.78.99:5432/LOGiS-Ai-db?schema=public\"' > .env && npx prisma db push --accept-data-loss"
+            
             docker-compose -f GCE_docker-compose.prod.yml up -d nginx
           "
