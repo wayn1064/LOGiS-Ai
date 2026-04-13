@@ -78,7 +78,7 @@ jobs:
             sleep 3
             
             # DB 스키마 동기화: docker-compose exec 의 -e 옵션과 홑따옴표를 사용하여 파싱 에러 없이 DATABASE_URL을 주입
-            docker-compose -f GCE_docker-compose.prod.yml exec -T -e DATABASE_URL='postgresql://postgres:!zxasqw12%40@34.64.78.99:5432/LOGiS-Ai-db?schema=public' ${{ env.SERVICE_NAME }}-backend npx prisma db push --accept-data-loss
+            docker-compose -f GCE_docker-compose.prod.yml exec -T -e DATABASE_URL='postgresql://postgres:!zxasqw12%40@postgresql-db:5432/LOGiS-Ai-db?schema=public' ${{ env.SERVICE_NAME }}-backend npx prisma db push --accept-data-loss
             
             docker-compose -f GCE_docker-compose.prod.yml up -d nginx
           "

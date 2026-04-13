@@ -5,7 +5,8 @@ import { PrismaClient } from '../generated/prisma/client';
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
 const createPrismaClient = () => {
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const connectionString = process.env.DATABASE_URL || "postgresql://postgres:!zxasqw12%40@postgresql-db:5432/LOGiS-Ai-db?schema=public";
+  const pool = new Pool({ connectionString });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter, log: ['query', 'error', 'warn'] });
 };
