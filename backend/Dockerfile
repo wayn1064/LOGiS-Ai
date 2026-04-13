@@ -19,5 +19,5 @@ RUN npm run build
 # Expose backend port
 EXPOSE 5005
 ENV PORT=5005
-# Run the node app
-CMD ["node", "dist/index.js"]
+# Run the node app with Prisma DB Push to ensure tables exist
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node dist/index.js"]
