@@ -17,11 +17,21 @@ app.get('/api/health', (req, res) => {
 
 app.get('/api/db-status', async (req, res) => {
   try {
-    await prisma.$queryRaw`SELECT 1`;
-    res.json({ status: 'ok', message: 'Database connected successfully' });
+    const result = await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: 'ok', message: 'Database connected successfully', result });
   } catch (error) {
     console.error('Database connection failed:', error);
     res.status(500).json({ status: 'error', message: 'Database connection failed', error: String(error) });
+  }
+});
+
+import { execSync } from 'child_process';
+app.get('/api/debug/db-push', (req, res) => {
+  try {
+    const stdout = execSync('npx prisma db push --accept-data-loss').toString();
+    res.json({ status: 'success', output: stdout });
+  } catch (error: any) {
+    res.status(500).json({ status: 'error', output: error.stdout?.toString(), error: error.message });
   }
 });
 
