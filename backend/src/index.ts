@@ -28,10 +28,11 @@ app.get('/api/db-status', async (req, res) => {
 import { execSync } from 'child_process';
 app.get('/api/debug/db-push', (req, res) => {
   try {
-    const stdout = execSync('npx prisma db push --accept-data-loss').toString();
+    const env = { ...process.env, DATABASE_URL: "postgresql://postgres:!zxasqw12%40@34.64.78.99:5432/LOGiS-Ai-db?schema=public" };
+    const stdout = execSync('npx prisma db push --accept-data-loss', { env }).toString();
     res.json({ status: 'success', output: stdout });
   } catch (error: any) {
-    res.status(500).json({ status: 'error', output: error.stdout?.toString(), error: error.message });
+    res.status(500).json({ status: 'error', output: error.stdout?.toString(), error: error.message, stderr: error.stderr?.toString() });
   }
 });
 
